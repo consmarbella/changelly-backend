@@ -41,15 +41,22 @@ const privateKeyObject = crypto.createPrivateKey({ key: API_PRIVATE_KEY, type: '
 app.post('/api/changelly', async (req, res) => {
   try {
     const { fiatCurrency, cryptoCurrency, amount } = req.body;
+    
     const baseUrl = 'https://fiat-api.changelly.com/v1/offers';
     const queryParams = new URLSearchParams({ currencyFrom: fiatCurrency, currencyTo: cryptoCurrency, amountFrom: amount, country: 'US', state: 'CA' });
     const path = `${baseUrl}?${queryParams.toString()}`;
     const message = {};
     const payload = path + JSON.stringify(message);
     const signature = crypto.sign('sha256', Buffer.from(payload), privateKeyObject).toString('base64');
+    
     const fetch = (await import('node-fetch')).default;
     const response = await fetch(path, { method: 'GET', headers: { 'X-Api-Key': API_PUBLIC_KEY, 'X-Api-Signature': signature } });
-    const data = await response.json();
+    
+    console.log("Changelly API Status:", response.status);
+    const text = await response.text();
+    console.log("Response body:", text);
+    const data = JSON.parse(text);
+    
     res.json(data);
   } catch (error) {
     console.error('Error:', error);
