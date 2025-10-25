@@ -1,9 +1,11 @@
 const express = require('express');
 const cors = require('cors');
 const crypto = require('crypto');
+
 const app = express();
 app.use(cors());
 app.use(express.json());
+
 const API_PUBLIC_KEY = 'cf78349b4c615368149cb03f46c7b79b54e3ef1174f8170c7e89061bccaedba2';
 const API_PRIVATE_KEY = `-----BEGIN PRIVATE KEY-----
 MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDkgKNOKohjAsrV
@@ -33,23 +35,31 @@ PAnsDirjahnS6s2Jt2F8dvkIuzTR+5ZPKRVYUVKSNOyey4NVzdfJ1LyPRmVspx4N
 sSyPOMiqvV30tqDAuY7IfcT4oIPTMp3Xn1wZQN4jQqT4YoeGC+Bu5XSiouKu4jRI
 NtDJe3qIg5uoWrctCOG9Cw==
 -----END PRIVATE KEY-----`;
+
 const privateKeyObject = crypto.createPrivateKey({
   key: API_PRIVATE_KEY,
   type: 'pkcs8',
   format: 'pem'
 });
+
 app.post('/api/changelly', async (req, res) => {
   try {
     const { fiatCurrency, cryptoCurrency, amount } = req.body;
     
-    const path = 'https://fiat-api.changelly.com/v1/offers';
-    const message = {
-      fiatCurrency: fiatCurrency,
-      cryptoCurrency: cryptoCurrency,
-      amountFrom: parseFloat(amount),
+    // Construir URL con query parameters (GET request)
+    const baseUrl = 'https://fiat-api.changelly.com/v1/offers';
+    const queryParams = new URLSearchParams({
+      currencyFrom: fiatCurrency,
+      currencyTo: cryptoCurrency,
+      amountFrom: amount,
       country: 'US',
       state: 'CA'
-    };
+    });
+    
+    const path = `${baseUrl}?${queryParams.toString()}`;
+    
+    // Para GET requests, el message debe estar vacío
+    const message = {};
     
     const payload = path + JSON.stringify(message);
     const signature = crypto.sign('sha256', Buffer.from(payload), privateKeyObject).toString('base64');
@@ -57,13 +67,11 @@ app.post('/api/changelly', async (req, res) => {
     const fetch = (await import('node-fetch')).default;
     
     const response = await fetch(path, {
-      method: 'POST',
+      method: 'GET',
       headers: {
-        'Content-Type': 'application/json',
         'X-Api-Key': API_PUBLIC_KEY,
         'X-Api-Signature': signature
-      },
-      body: JSON.stringify(message)
+      }
     });
     
     const data = await response.json();
@@ -72,6 +80,8 @@ app.post('/api/changelly', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
 module.exports = app;
