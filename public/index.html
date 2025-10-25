@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comprar Criptomonedas con Tarjeta - DolarExpress</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        h1 {
+            color: #2d3748;
+            font-size: 28px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .subtitle {
+            color: #718096;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            color: #4a5568;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+            background: #f7fafc;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f0fff4;
+            border-radius: 10px;
+            border-left: 4px solid #48bb78;
+            display: none;
+        }
+
+        .result.show {
+            display: block;
+        }
+
+        .result-label {
+            color: #2f855a;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .result-value {
+            color: #22543d;
+            font-size: 24px;
+            font-weight: 700;
+            word-break: break-all;
+        }
+
+        .error {
+            margin-top: 20px;
+            padding: 16px;
+            background: #fff5f5;
+            border-radius: 10px;
+            border-left: 4px solid #f56565;
+            color: #c53030;
+            font-size: 14px;
+            display: none;
+        }
+
+        .error.show {
+            display: block;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid #f3f4f6;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .info-badge {
+            display: inline-block;
+            background: #ebf4ff;
+            color: #2c5282;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .wallet-input {
+            margin-top: 20px;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+        }
+
+        .btn-success:hover {
+            box-shadow: 0 10px 20px rgba(72, 187, 120, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>💰 Comprar Criptomonedas</h1>
+        <p class="subtitle">Convierte tus dólares en Bitcoin instantáneamente</p>
+
+        <form id="cryptoForm">
+            <div class="form-group">
+                <label for="amount">Monto en USD</label>
+                <input 
+                    type="number" 
+                    id="amount" 
+                    placeholder="Ingresa el monto en dólares"
+                    min="10"
+                    step="0.01"
+                    required
+                >
+                <span class="info-badge">Monto mínimo: $10 USD</span>
+            </div>
+
+            <div class="form-group">
+                <label for="crypto">Criptomoneda</label>
+                <select id="crypto" required>
+                    <option value="btc">Bitcoin (BTC)</option>
+                    <option value="eth">Ethereum (ETH)</option>
+                    <option value="usdt">Tether (USDT)</option>
+                </select>
+            </div>
+
+            <div class="form-group wallet-input" style="display: none;">
+                <label for="wallet">Dirección de tu Wallet</label>
+                <input 
+                    type="text" 
+                    id="wallet" 
+                    placeholder="Ingresa tu dirección de wallet"
+                    required
+                >
+            </div>
+
+            <button type="submit" class="btn" id="quoteBtn">
+                Obtener Cotización
+            </button>
+        </form>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p style="margin-top: 12px; color: #718096;">Obteniendo cotización...</p>
+        </div>
+
+        <div class="result" id="result">
+            <div class="result-label">Recibirás aproximadamente:</div>
+            <div class="result-value" id="resultAmount">-</div>
+            <button type="button" class="btn btn-success" id="continueBtn" style="margin-top: 20px;">
+                Continuar con la Compra
+            </button>
+        </div>
+
+        <div class="error" id="error"></div>
+    </div>
+
+    <script>
+        const form = document.getElementById('cryptoForm');
+        const amountInput = document.getElementById('amount');
+        const cryptoSelect = document.getElementById('crypto');
+        const walletInput = document.getElementById('wallet');
+        const walletGroup = document.querySelector('.wallet-input');
+        const quoteBtn = document.getElementById('quoteBtn');
+        const continueBtn = document.getElementById('continueBtn');
+        const loading = document.getElementById('loading');
+        const resultDiv = document.getElementById('result');
+        const resultAmount = document.getElementById('resultAmount');
+        const errorDiv = document.getElementById('error');
+
+        const BACKEND_URL = 'https://changelly-backend.onrender.com';
+        let currentQuote = null;
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const amount = parseFloat(amountInput.value);
+            const crypto = cryptoSelect.value;
+
+            if (amount < 10) {
+                showError('El monto mínimo es $10 USD');
+                return;
+            }
+
+            hideAll();
+            loading.classList.add('show');
+            quoteBtn.disabled = true;
+
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/quote`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        fiatAmount: amount,
+                        fiatCurrency: 'USD',
+                        cryptoCurrency: crypto.toUpperCase()
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Error al obtener cotización');
+                }
+
+                currentQuote = data;
+
+                loading.classList.remove('show');
+                resultDiv.classList.add('show');
+                resultAmount.textContent = `${data.cryptoAmount} ${crypto.toUpperCase()}`;
+
+                walletGroup.style.display = 'block';
+                walletInput.required = true;
+
+            } catch (error) {
+                console.error('Error:', error);
+                loading.classList.remove('show');
+                showError(error.message || 'Error al procesar la solicitud');
+            } finally {
+                quoteBtn.disabled = false;
+            }
+        });
+
+        continueBtn.addEventListener('click', () => {
+            const wallet = walletInput.value.trim();
+
+            if (!wallet) {
+                showError('Por favor ingresa tu dirección de wallet');
+                return;
+            }
+
+            if (!currentQuote) {
+                showError('No hay cotización disponible');
+                return;
+            }
+
+            alert(`Próximamente: Procesaremos ${currentQuote.cryptoAmount} ${cryptoSelect.value.toUpperCase()} a la dirección ${wallet}`);
+        });
+
+        function showError(message) {
+            errorDiv.textContent = message;
+            errorDiv.classList.add('show');
+            setTimeout(() => {
+                errorDiv.classList.remove('show');
+            }, 5000);
+        }
+
+        function hideAll() {
+            loading.classList.remove('show');
+            resultDiv.classList.remove('show');
+            errorDiv.classList.remove('show');
+        }
+    </script>
+</body>
+</html>
