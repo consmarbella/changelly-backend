@@ -30,6 +30,7 @@ function getPrivateKey() {
 app.post('/api/changelly', async (req, res) => {
   try {
     const { fiatCurrency, cryptoCurrency, amount, country = 'US', state } = req.body || {};
+
     if (!fiatCurrency || !cryptoCurrency || !amount) {
       return res.status(400).json({ error: 'fiatCurrency, cryptoCurrency, amount are required' });
     }
@@ -41,6 +42,7 @@ app.post('/api/changelly', async (req, res) => {
       amountFrom: String(amount),
       country: String(country),
     });
+
     if (state) qp.set('state', String(state));
 
     const pathWithQuery = `${baseUrl}?${qp.toString()}`;
@@ -48,8 +50,8 @@ app.post('/api/changelly', async (req, res) => {
     // Changelly X-API-SIGNATURE = base64(sign(sha256, path + body, privateKey))
     const messageObj = {};
     const payload = pathWithQuery + JSON.stringify(messageObj);
-
     const keyObj = getPrivateKey();
+
     if (!keyObj) return res.status(500).json({ error: 'Private key not available' });
 
     const signature = crypto.sign('sha256', Buffer.from(payload), keyObj).toString('base64');
@@ -65,6 +67,7 @@ app.post('/api/changelly', async (req, res) => {
     });
 
     const text = await response.text();
+
     if (!response.ok) {
       console.error('Changelly error', response.status, text);
       return res.status(response.status).send(text);
@@ -72,6 +75,20 @@ app.post('/api/changelly', async (req, res) => {
 
     let data;
     try { data = JSON.parse(text); } catch (e) { data = text; }
+
+    // Apply 2% markup: multiply BTC amount by 0.98
+    if (data && Array.isArray(data)) {
+      data = data.map(offer => {
+        if (offer.amountExpectedTo) {
+          offer.amountExpectedTo = (parseFloat(offer.amountExpectedTo) * 0.98).toString();
+        }
+        if (offer.amountTo) {
+          offer.amountTo = (parseFloat(offer.amountTo) * 0.98).toString();
+        }
+        return offer;
+      });
+    }
+
     return res.json(data);
   } catch (error) {
     console.error('Error:', error);
